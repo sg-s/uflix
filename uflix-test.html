@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <link href="video-js.css" rel="stylesheet">
+        <script src="video.js"></script>
+        <style type="text/css">
+          .vjs-default-skin { color: #eb0000; }
+          .vjs-default-skin .vjs-play-progress,
+          .vjs-default-skin .vjs-volume-level { background-color: #101112 }
+          .vjs-default-skin .vjs-control-bar,
+          .vjs-default-skin .vjs-big-play-button { background: rgba(18,14,14,0.7) }
+          .vjs-default-skin .vjs-slider { background: rgba(18,14,14,0.2333333333333333) }
+          .vjs-default-skin .vjs-control-bar { font-size: 72% }
+        </style>
+    </head>
+
+
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        
+        <video id="MY_VIDEO_1" class="video-js vjs-default-skin" controls
+         preload="auto" width="640" height="264" poster="MY_VIDEO_POSTER.jpg"
+         data-setup="{}">
+         <source src="test.mp4" type='video/mp4'>
+         <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+        </video>
+
+        </body>
+</html>
