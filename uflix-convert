@@ -1,0 +1,18 @@
+#!/bin/bash
+# uflix-convert
+# converts all media files recursively in a directory to .mp4 files, playable by web browsers
+# usage:
+# uflix-convert [name of folder]
+
+# look for avi files
+convert_these=$(find $1 -name '*.avi')
+
+for a in *$convert_these; do 
+	if [ $(ls $a.mp4 | wc -l) -eq 0 ] 
+	then
+		echo "converting $a..."
+		ffmpeg -i $a -vcodec libx264 -pix_fmt yuv420p -profile:v baseline -preset slower -crf 18 -vf "scale=trunc(in_w/2)*2:trunc(in_h/2)*2" $a.mp4
+	else
+		echo "Looks like $a is already converted"
+	fi
+done
