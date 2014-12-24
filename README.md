@@ -24,9 +24,10 @@ uflix assumes a webserver is running on the computer that has all the videos. Fo
 ## usage
 
 ```
-uflix -c 
+uflix-convert 
 ```
 
+to convert other media files to HTML5-compatible files. 
 
 
 ## Roadmap
