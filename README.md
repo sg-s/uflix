@@ -8,7 +8,7 @@ uflix is a *very* lightweight home video sharing solution
 
 ## The problem 
 
-You have a bunch of movies and videos, (some .avi) on a computer or on a hard drive at home. You want to watch a particular video on your tablet on your WiFi, or on a differnet computer, perhaps running a different OS. You want to allow anyone on your WiFi to watch any of these videos, without messy drive mounting, NAS or FTP. 
+You have a bunch of movies and videos, (some .avi) on a computer or on a hard drive at home. You want to watch a particular video on your tablet on your WiFi, or on a different computer, perhaps running a different OS. You want to allow anyone on your WiFi to watch any of these videos, without messy drive mounting, NAS or FTP. 
 
 ## The Solution
 
