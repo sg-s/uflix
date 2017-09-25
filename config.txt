@@ -1,0 +1,18 @@
+# configuration file for uflix
+# rename this file to "config.txt"
+# and populate the fields below before running anything in this package
+
+[uflix-config]
+
+# where are your videos storied? enter the full path here
+movies_path = '/Volumes/Skadi2/movies/'
+
+# these strings will be removed from file and folder names
+bad_file_strings = ['aac','BDRip','subs','ac3','mp4','D1','Disc_3','Disc_2','Disc_1','HDrip','[',']','720p','1080p','1080i','DVDrip','x264','Full Movie','HD','H264','.','_','BluRay','dvd','XviD','divx','BRRip','HDTV','UHD']
+
+
+# only files with these extensions will be retained 
+allowed_ext = ['mp4','mkv','avi','mov','divx','xvid','m4v','mpg','mpeg']
+
+# text files with these strings will be deleted
+bad_strings = ["download","torrent","share","facebook","seed","piratebay","upload"]

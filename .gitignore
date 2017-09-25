@@ -1,3 +1,7 @@
 test/
 *.avi
 *.mp4
+*.pyc
+*.tmp
+*.log
+*.ipynb

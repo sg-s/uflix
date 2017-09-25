@@ -3,32 +3,76 @@
 
 ![image](images/header.png)
 
+uflix is a set of tools to help you organise and view your home library of videos, movies and TV shows.
 
-uflix is a *very* lightweight home video sharing solution
+## Usage 
 
-## The problem 
-
-You have a bunch of movies and videos, (some .avi) on a computer or on a hard drive at home. You want to watch a particular video on your tablet on your WiFi, or on a different computer, perhaps running a different OS. You want to allow anyone on your WiFi to watch any of these videos, without messy drive mounting, NAS or FTP. 
-
-## The Solution
-
-uflix assumes a webserver is running on the computer that has all the videos. For some specififed folder, uflix
-
-1. finds all video files recursively and makes a list of them
-2. if necessary, it transcodes them to HTML5-compatible .mp4s using VLC
-3. it builds and links small webpages in each folder that allows web plays of that video file
-4. it builds a "master" webpage from which you can find and navigate to all your files -- in the browser!
-
-## installation
-
-## usage
+Make sure that every file is in a folder in your movies folder:
 
 ```
-uflix-convert 
+uflix put-in-folder
 ```
 
-to convert other media files to HTML5-compatible files. 
+Clean up names, removing unnecesary cruft and rename folders to match this format: `Movie Name (Year)` 
 
+```
+uflix rename 
+```
+
+Use IMDB to figure out what the correct name for your horribly named folders are
+
+```
+uflix ask-imdb
+```
+
+
+Clean up your folder of movies, arranging them by name, putting "naked" video files into folders, and renaming folders in this format: `Movie Name (Year)`, and use IMDB to guess names:
+
+```
+uflix organise 
+# This is equivalent to 
+uflix put-in-folder
+uflix rename
+uflix ask-imdb
+```
+
+
+Don't actually do anything, but show what `uflix` would do:
+
+```
+uflix organise --dryrun
+```
+
+Clean up temporary files that `uflix` creates:
+
+```
+uflix cleanup
+```
+
+Download movie posters from IMDB and (macOS only) change the folder icon to be that of the movie poster. 
+
+```
+uflix get-posters
+```
+Check that your `config.txt` has reasonable values and looks good:
+
+```
+uflix check-config
+```
+
+
+
+## Dependencies 
+
+1. python3 
+2. 
+
+## Installation 
+
+
+
+
+## License 
 
 ## Roadmap
 
