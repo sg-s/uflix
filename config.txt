@@ -4,8 +4,10 @@
 
 [uflix-config]
 
-# where are your videos storied? enter the full path here
-movies_path = '/Volumes/Skadi2/movies/'
+# where are your videos stored? 
+movies_path = /Volumes/DANDAK/movies/
+tv_shows_path = /Volumes/DANDAK/tv-shows/
+internet_videos_path = /Volumes/DANDAK/internet-videos/
 
 # these strings will be removed from file and folder names
 bad_file_strings = ['aac','BDRip','subs','ac3','mp4','D1','Disc_3','Disc_2','Disc_1','HDrip','[',']','720p','1080p','1080i','DVDrip','x264','Full Movie','HD','H264','.','_','BluRay','dvd','XviD','divx','BRRip','HDTV','UHD']
