@@ -28,6 +28,8 @@ onlyfiles = [f for f in listdir(movies_path) if isfile(join(movies_path, f))]
 # remove dot files
 onlyfiles = [f for f in onlyfiles if not f[0] == '.']
 allowed_ext = ['mp4','mkv','avi','mov','divx','xvid','m4v','mpg','mpeg']
+
+
 # if these files have an extention that is in the list, make a folder with a cleaned 
 # up name, and move it into it. if this folder already exists, then no worries -- move i
 # in anyway
