@@ -13,7 +13,7 @@ import subprocess
 import configparser
 from guessit import guessit
 from BetterObjects import BetterObjects
-
+import shutil
 
 
 
@@ -102,13 +102,16 @@ class uflix():
 
 
 	def clean(self, dry_run = True):
-
+		'''Clean all file and folder names
+		'''
 		if dry_run:
 
 			print('Running in dry_run mode...')
 
 			if not self.virtual_copy_path:
 				raise ValueError('virtual_copy_path not set')
+
+			self.movies_path = self.virtual_copy_path
 
 		else:
 			raise ValueError('not coded when dry_run is false')
@@ -122,55 +125,71 @@ class uflix():
 
 
 	def move_single_files_into_folders(self):
-
+		'''Move all single movie files into folders
+		'''
 		movies_path = self.movies_path;
 
 
 		onlyfiles = [f for f in os.listdir(movies_path) if os.path.isfile(os.path.join(movies_path, f))]
 
 
-		# remove dot files
+		# remove dot files from list
 		onlyfiles = [f for f in onlyfiles if not f[0] == '.']
 		allowed_ext = self.allowed_ext
 
 
+		for file in onlyfiles:
+			filename, file_extension = os.path.splitext(file)
+			file_extension = file_extension.replace('.','')
+			if file_extension in self.allowed_ext:
+				print(filename)
 
-		for i in range(0, len(onlyfiles)):
-			this_file = onlyfiles[i]
-			ok = False
-			for j in range(0, len(allowed_ext)):
-				if onlyfiles[i].find(allowed_ext[j]) > 0:
-					ok = True
-				if not ok:
-					continue
-		
+				# move this into a folder with the same name
+				if not os.path.exists(os.path.join(movies_path,filename)):
+					os.mkdir(os.path.join(movies_path,filename))
 
+				# now move this file into this folder
+				shutil.move(os.path.join(movies_path,file),os.path.join(movies_path,filename,file))
 
-
-			# clean up name
-			g = guessit(this_file)
-	
-			new_name = this_file
-			if ("year" in g.keys() and "title" in g.keys()):
-				new_name = g['title'] + " (" + str(g['year']) + ")"
-			elif ("title" in g.keys()):
-				bad_year.append(this_file)
-				new_name = g['title']
 			else:
-				bad_title.append(this_file)
+				print("This extension not allowed:")
+				print(file_extension)
+
+
+		# for i in range(0, len(onlyfiles)):
+		# 	this_file = onlyfiles[i]
+		# 	ok = False
+		# 	for j in range(0, len(allowed_ext)):
+		# 		if onlyfiles[i].find(allowed_ext[j]) > 0:
+		# 			ok = True
+		# 		if not ok:
+		# 			continue
 		
-			print(this_file + '->' + new_name)
+
+		# 	# clean up name
+		# 	g = guessit(this_file)
+	
+		# 	new_name = this_file
+		# 	if ("year" in g.keys() and "title" in g.keys()):
+		# 		new_name = g['title'] + " (" + str(g['year']) + ")"
+		# 	elif ("title" in g.keys()):
+		# 		bad_year.append(this_file)
+		# 		new_name = g['title']
+		# 	else:
+		# 		bad_title.append(this_file)
 		
-			# check if this folder exists 
-			folder_path = os.path.join(movies_path,new_name)
-			new_full_path = os.path.join(folder_path, onlyfiles[i])
-			old_full_path = os.path.join(movies_path,onlyfiles[i])
-			if not os.path.isdir(folder_path):
-				print('making ' + folder_path)
-				os.mkdir(folder_path)
-				print('making ' + folder_path)
+		# 	print(this_file + '->' + new_name)
+		
+		# 	# check if this folder exists 
+		# 	folder_path = os.path.join(movies_path,new_name)
+		# 	new_full_path = os.path.join(folder_path, onlyfiles[i])
+		# 	old_full_path = os.path.join(movies_path,onlyfiles[i])
+		# 	if not os.path.isdir(folder_path):
+		# 		print('making ' + folder_path)
+		# 		os.mkdir(folder_path)
+		# 		print('making ' + folder_path)
 				
-			# move this file into this directory
-			print('moving: ' + old_full_path + '->' + new_full_path)
-			os.rename(old_full_path,new_full_path)
-			
+		# 	# move this file into this directory
+		# 	print('moving: ' + old_full_path + '->' + new_full_path)
+		# 	os.rename(old_full_path,new_full_path)
+		# 	
