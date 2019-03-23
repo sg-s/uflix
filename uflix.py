@@ -12,8 +12,10 @@ import time
 import subprocess
 import configparser
 from guessit import guessit
-from BetterObjects import BetterObjects
 import shutil
+from fuzzywuzzy import process, fuzz
+import pandas
+from bisect import bisect_left 
 
 
 
@@ -26,6 +28,10 @@ class uflix():
 	internet_videos_path = []
 	virtual_copy_path = []
 	allowed_ext = []
+
+	# stores a list of movies from IMDB
+	imdb_movies = []
+	imdb_movies_year = []
 
 	# define a set of strings to remove from the folder_name before searching
 	bad_strings  = []
@@ -58,7 +64,7 @@ class uflix():
 		self.bad_strings = cf.get('uflix-config', 'bad_strings')
 		self.allowed_ext = cf.get('uflix-config', 'allowed_ext')
 
-
+		self.import_movie_list_from_imdb()
 
 	def make_virtual_copy(self, to_these):
 		"""makes a copy of the movies dir, with 0 byte files
@@ -124,6 +130,35 @@ class uflix():
 		self.clean_up_folder_names()
 
 
+	def import_movie_list_from_imdb(self):
+		'''reads out movies from imdb'''
+
+		p = pandas.read_csv('imdb.tsv',sep='\t',usecols=[1,2])
+		ismovie = p['titleType']=='movie'
+		movies = p[ismovie]
+		self.imdb_movies = movies.primaryTitle.tolist()
+		self.imdb_movies.sort()
+
+
+	def resolve_name_from_imdb(self, name):
+		'''resolves name from list of names using
+		fuzzy string matching'''
+
+		this_letter = name[0]
+		a = bisect_left(self.imdb_movies,this_letter)
+		next_letter = chr(ord(this_letter)+1)
+		z = bisect_left(self.imdb_movies,next_letter)
+
+		results = process.extractOne(name,self.imdb_movies[a:z])
+
+		if results[1] == 0:
+			return results
+
+		print("Could not get an exact match, will perform a full search...")
+
+		return process.extractOne(name,self.imdb_movies,scorer=fuzz.token_sort_ratio)
+
+
 	def move_single_files_into_folders(self):
 		'''Move all single movie files into folders
 		'''
@@ -156,6 +191,33 @@ class uflix():
 				print(file_extension)
 
 
+
+	def clean_up_folder_names(self):
+		'''clean up folder names using guessit'''
+
+		print("Cleaning up folder names...")
+
+		movies_path = self.movies_path;
+
+		onlyfolders = [f for f in os.listdir(movies_path) if os.path.isdir(os.path.join(movies_path, f))]
+
+		for folder_name in onlyfolders:
+			g = guessit(folder_name)
+
+
+			new_name = folder_name
+			if ("year" in g.keys() and "title" in g.keys()):
+				new_name = g['title'] + " (" + str(g['year']) + ")"
+			elif ("title" in g.keys()):
+				new_name = g['title']
+			else:
+				print("This folder could not be cleaned up:")
+				print(folder_name)
+
+			if new_name != folder_name:
+				print(folder_name + ' -> ' + new_name)
+
+
 		# for i in range(0, len(onlyfiles)):
 		# 	this_file = onlyfiles[i]
 		# 	ok = False
@@ -166,17 +228,7 @@ class uflix():
 		# 			continue
 		
 
-		# 	# clean up name
-		# 	g = guessit(this_file)
-	
-		# 	new_name = this_file
-		# 	if ("year" in g.keys() and "title" in g.keys()):
-		# 		new_name = g['title'] + " (" + str(g['year']) + ")"
-		# 	elif ("title" in g.keys()):
-		# 		bad_year.append(this_file)
-		# 		new_name = g['title']
-		# 	else:
-		# 		bad_title.append(this_file)
+
 		
 		# 	print(this_file + '->' + new_name)
 		
