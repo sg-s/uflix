@@ -119,10 +119,8 @@ class uflix():
 
 			self.movies_path = self.virtual_copy_path
 
-		else:
-			raise ValueError('not coded when dry_run is false')
-
-
+		#else:
+			# raise ValueError('not coded when dry_run is false')
 
 
 		self.move_single_files_into_folders()
@@ -202,6 +200,21 @@ class uflix():
 				print(file_extension)
 
 
+	
+	def mergefolders(self,root_src_dir, root_dst_dir):
+
+	    for src_dir, dirs, files in os.walk(root_src_dir):
+	        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+	        if not os.path.exists(dst_dir):
+	            os.makedirs(dst_dir)
+	        for file_ in files:
+	            src_file = os.path.join(src_dir, file_)
+	            dst_file = os.path.join(dst_dir, file_)
+	            if os.path.exists(dst_file):
+	                os.remove(dst_file)
+	            shutil.copy(src_file, dst_dir)
+
+
 
 	def clean_up_folder_names(self):
 		'''clean up folder names using guessit'''
@@ -215,91 +228,99 @@ class uflix():
 		for folder_name in onlyfolders:
 
 
-			# is it already in an acceptable format? 
-			# check for (YYYY) in the name
-			if folder_name.find('(') > 0 and folder_name.find(')') > 0:
-				a = folder_name.rfind('(')
-				z = folder_name.rfind(')')
-				YYYY = folder_name[a+1:z]
-				if len(YYYY) == 4 and YYYY.isdigit():
-					# it's probably OK
+			try:
+
+				# is it already in an acceptable format? 
+				# check for (YYYY) in the name
+				if folder_name.find('(') > 0 and folder_name.find(')') > 0:
+					a = folder_name.rfind('(')
+					z = folder_name.rfind(')')
+					YYYY = folder_name[a+1:z]
+					if len(YYYY) == 4 and YYYY.isdigit():
+						# it's probably OK
+						print("[OK] " + folder_name)
+						continue
+
+
+				# we're now working with something that is probably not OK
+				g = guessit(folder_name)
+
+
+				guessit_title = folder_name
+				guessit_year = []
+				if ("year" in g.keys() and "title" in g.keys()):
+					guessit_title = g['title']
+					guessit_year = g['year']
+				elif ("title" in g.keys()):
+					guessit_title = g['title']
+				else:
+					print("This folder could not be cleaned up by guessit:")
+					print(folder_name)
 					continue
 
 
-			# we're now working with something that is probably not OK
-			g = guessit(folder_name)
 
-
-			guessit_title = folder_name
-			guessit_year = []
-			if ("year" in g.keys() and "title" in g.keys()):
-				guessit_title = g['title']
-				guessit_year = g['year']
-			elif ("title" in g.keys()):
-				guessit_title = g['title']
-			else:
-				print("This folder could not be cleaned up by guessit:")
+				# use the guessit-name to search IMDB
+				print('\n\n\n')
 				print(folder_name)
-				continue
+				# print(guessit_title)
+				new_name = ''
+				imdb_name, score, imdb_year = self.resolve_name_from_imdb(guessit_title)
 
 
-
-			# use the guessit-name to search IMDB
-			print('\n\n\n')
-			print(folder_name)
-			# print(guessit_title)
-			new_name = ''
-			imdb_name, score, imdb_year = self.resolve_name_from_imdb(guessit_title)
-
-
-			
-
-			if (imdb_name == guessit_title and imdb_year == str(guessit_year)):
-				# perfect match
-				new_name = imdb_name + ' (' + str(imdb_year) + ')'
 				
-			elif  (imdb_name == guessit_title and imdb_year != str(guessit_year)):
-				# years don't match, so go with guessityear if..
-				if guessit_year:
-					# use guessit year
-					new_name = imdb_name + ' (' + str(guessit_year) + ')'
-				elif imdb_year:
-					# use imdb year
+
+				if (imdb_name == guessit_title and imdb_year == str(guessit_year)):
+					# perfect match
 					new_name = imdb_name + ' (' + str(imdb_year) + ')'
+					
+				elif  (imdb_name == guessit_title and imdb_year != str(guessit_year)):
+					# years don't match, so go with guessityear if..
+					if guessit_year:
+						# use guessit year
+						new_name = imdb_name + ' (' + str(guessit_year) + ')'
+					elif imdb_year:
+						# use imdb year
+						new_name = imdb_name + ' (' + str(imdb_year) + ')'
+					else:
+						print('could not determine year')
+					# print('years dont match but titles match')
+					# print(imdb_name)
+					# print('imdb year = ' + imdb_year)
+					# print('guessit year  = ' + str(guessit_year))
+				elif (imdb_name != guessit_title):
+					print("titles dont match")
+					if score == 100:
+						print('perfect score on imdb')
+						new_name = imdb_name + ' (' + str(imdb_year) + ')'
+					else:
+						print('Imperfect score: ' + str(score))
+						print('imdb_name = ' + imdb_name)
 				else:
-					print('could not determine year')
-				# print('years dont match but titles match')
-				# print(imdb_name)
-				# print('imdb year = ' + imdb_year)
-				# print('guessit year  = ' + str(guessit_year))
-			elif (imdb_name != guessit_title):
-				print("titles dont match")
-				if score == 100:
-					print('perfect score on imdb')
-					new_name = imdb_name + ' (' + str(imdb_year) + ')'
-				else:
-					print('Imperfect score: ' + str(score))
+					print('\nedge case!!!!')
 					print('imdb_name = ' + imdb_name)
-			else:
-				print('\nedge case!!!!')
-				print('imdb_name = ' + imdb_name)
-				print('guessit_name = ' + guessit_title)
-				print('score = ' + str(score))
-				print('imdb_year = ' + str(imdb_year))
-				print('guessit_year = ' + str(guessit_year))
+					print('guessit_name = ' + guessit_title)
+					print('score = ' + str(score))
+					print('imdb_year = ' + str(imdb_year))
+					print('guessit_year = ' + str(guessit_year))
 
-			if new_name:
-				print(folder_name + '->' + new_name)
-				# rename
-				new_full_path = os.path.join(movies_path, new_name)
-				old_full_path = os.path.join(movies_path,folder_name)
+				if new_name:
+					print(folder_name + '->' + new_name)
+					# rename
+					new_full_path = os.path.join(movies_path, new_name)
+					old_full_path = os.path.join(movies_path,folder_name)
 
-				# check if this directory already exists
-				if os.path.isdir(new_full_path):
-					# move everything in this folder to new folder
-					files = os.listdir(old_full_path)
-					for f in files:
-						shutil.move(os.path.join(old_full_path,f), os.path.join(new_full_path, f))
-				else:
-					os.rename(old_full_path,new_full_path)
+					# check if this directory already exists
+					if os.path.isdir(new_full_path):
+						# move everything in this folder to new folder
+						self.mergefolders(old_full_path, new_full_path)
 
+						# delete old folder
+						shutil.rmtree(old_full_path)
+
+					else:
+						os.rename(old_full_path,new_full_path)
+
+			except:
+				print("Something went wrong with this folder:")
+				print(folder_name)
