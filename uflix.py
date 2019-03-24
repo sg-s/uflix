@@ -5,6 +5,7 @@
 # Srinivas Gorur-Shandilya
 
 import os
+import stat
 import io
 import re
 import glob
@@ -16,7 +17,8 @@ import shutil
 from fuzzywuzzy import process, fuzz
 import pandas
 from bisect import bisect_left 
-
+import hashlib
+import sys
 
 
 
@@ -46,7 +48,6 @@ class uflix():
 
 		movies_path = cf.get('uflix-config', 'movies_path')
 		if os.path.exists(movies_path):
-			print("Setting movies_path")
 			self.movies_path = movies_path
 		else:
 			raise ValueError('movies_path does not exist. Check your config file')
@@ -64,7 +65,6 @@ class uflix():
 		self.bad_strings = cf.get('uflix-config', 'bad_strings')
 		self.allowed_ext = cf.get('uflix-config', 'allowed_ext')
 
-		self.import_movie_list_from_imdb()
 
 	def make_virtual_copy(self, to_these):
 		"""makes a copy of the movies dir, with 0 byte files
@@ -107,9 +107,13 @@ class uflix():
 
 
 
-	def clean(self, dry_run = True):
+	def clean(self, dry_run = False):
 		'''Clean all file and folder names
 		'''
+
+
+		self.import_movie_list_from_imdb()
+
 		if dry_run:
 
 			print('Running in dry_run mode...')
@@ -131,6 +135,10 @@ class uflix():
 	def import_movie_list_from_imdb(self):
 		'''reads out movies from imdb'''
 
+		if self.imdb_movies:
+			return
+
+		print("[uflix] Importing list of movies from IMDB...")
 		p = pandas.read_csv('imdb.tsv',sep='\t',usecols=[1,2,5])
 		ismovie = p['titleType']=='movie'
 		movies = p[ismovie]
@@ -200,9 +208,31 @@ class uflix():
 				print(file_extension)
 
 
+	def md5sum(self,filename):
+		BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+		md5 = hashlib.md5()
+		with open(filename, 'rb') as f:
+			while True:
+				data = f.read(BUF_SIZE)
+				if not data:
+					break
+				md5.update(data)
+		return md5.hexdigest()
+
+
+	def search(self, name):
+		'''searches list of movies for a movie'''
+
+		movies_path = self.movies_path;
+
+		onlyfolders = [f for f in os.listdir(movies_path) if os.path.isdir(os.path.join(movies_path, f))]
+
+		results = process.extractBests(name,onlyfolders)
+		for result in results:
+			print(result[0])
+
 	
 	def mergefolders(self,root_src_dir, root_dst_dir):
-
 	    for src_dir, dirs, files in os.walk(root_src_dir):
 	        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
 	        if not os.path.exists(dst_dir):
@@ -211,10 +241,58 @@ class uflix():
 	            src_file = os.path.join(src_dir, file_)
 	            dst_file = os.path.join(dst_dir, file_)
 	            if os.path.exists(dst_file):
-	                os.remove(dst_file)
+	            	# are the source and destination the same?
+	            	source_hash = self.md5sum(src_file)
+	            	dest_hash = self.md5sum(dst_file)
+	            	if source_hash == dest_hash:
+	            		return
+	            	else:
+	                	os.remove(dst_file)
 	            shutil.copy(src_file, dst_dir)
 
 
+	def list(self):
+		'''prints out a list of all missing movies'''
+		movies_path = self.movies_path;
+
+		onlyfolders = [f for f in os.listdir(movies_path) if os.path.isdir(os.path.join(movies_path, f))]
+
+		for folder in onlyfolders:
+			if not os.listdir(os.path.join(movies_path,folder)):
+				print(folder)
+
+
+	def add(self, name):
+		'''adds a new movie and makes an empty folder to hold it'''
+		full_path = os.path.join(self.movies_path, name)
+		if not os.path.isdir(full_path):
+			os.mkdir(full_path)
+
+
+
+	def make_cli(self):
+		'''make a copy of this script that is 
+		callable from the command line'''
+
+		f = open(sys.argv[0], "r")
+		contents = f.readlines()
+		f.close()
+
+		hashbang = '#!'+sys.executable
+
+		contents.insert(0, hashbang)
+
+		outfile = sys.argv[0]
+		outfile = outfile.replace('.py','')
+
+		f = open(outfile, "w")
+		contents = "".join(contents)
+		f.write(contents)
+		f.close()
+
+
+		st = os.stat(outfile)
+		os.chmod(outfile, st.st_mode | stat.S_IEXEC)
 
 	def clean_up_folder_names(self):
 		'''clean up folder names using guessit'''
@@ -324,3 +402,30 @@ class uflix():
 			except:
 				print("Something went wrong with this folder:")
 				print(folder_name)
+
+
+if __name__ == '__main__':
+	u = uflix()
+
+	
+		
+
+	if len(sys.argv) > 1:
+		verb = sys.argv[1]
+
+	if (verb == "clean"):
+		u.clean()
+	elif (verb == "make-cli"):
+		u.make_cli()
+	elif (verb == "search"): 
+		name = sys.argv[2]
+		u.search(name)
+	elif (verb == "add"):
+		name = sys.argv[2]
+		u.add(name)
+	elif (verb == "list"):
+		u.list()
+	else:
+		print('done')
+
+
