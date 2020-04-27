@@ -28,7 +28,6 @@ class uflix():
 	movies_path = []
 	tv_shows_path = []
 	internet_videos_path = []
-	virtual_copy_path = []
 	allowed_ext = []
 
 	# stores a list of movies from IMDB
@@ -42,8 +41,11 @@ class uflix():
 
 	def __init__(self):
 		"""read the config file and load attributes """
+
+
+
 		cf = configparser.RawConfigParser()   
-		configFilePath = r'config.txt'
+		configFilePath = os.path.join(os.path.dirname(__file__),'config.txt')
 		cf.read(configFilePath)
 
 		movies_path = cf.get('uflix-config', 'movies_path')
@@ -66,12 +68,14 @@ class uflix():
 		self.allowed_ext = cf.get('uflix-config', 'allowed_ext')
 
 
-	def make_virtual_copy(self, to_these):
+	def make_virtual_copy(self):
 		"""makes a copy of the movies dir, with 0 byte files
 
 		useful for testing what uflix does on dummy data without
 		touching your actual data
 		"""
+
+		to_these = os.path.dirname(__file__)
 
 		print('Making virtual copy...')
 
@@ -85,8 +89,6 @@ class uflix():
 
 
 		to_these = os.path.join(to_these,'virtual_copy')
-
-		self.virtual_copy_path = to_these
 
 		# first make all the folders
 		for i in range(0,len(allfiles)-1):
@@ -118,10 +120,7 @@ class uflix():
 
 			print('Running in dry_run mode...')
 
-			if not self.virtual_copy_path:
-				raise ValueError('virtual_copy_path not set')
-
-			self.movies_path = self.virtual_copy_path
+			self.movies_path = os.path.join(os.path.dirname(__file__),'virtual_copy')
 
 		#else:
 			# raise ValueError('not coded when dry_run is false')
@@ -139,7 +138,7 @@ class uflix():
 			return
 
 		print("[uflix] Importing list of movies from IMDB...")
-		p = pandas.read_csv('imdb.tsv',sep='\t',usecols=[1,2,5])
+		p = pandas.read_csv(os.path.join(os.path.dirname(__file__),'imdb.tsv'),sep='\t',usecols=[1,2,5])
 		ismovie = p['titleType']=='movie'
 		movies = p[ismovie]
 		movies.sort_values(by=['primaryTitle'])
@@ -316,7 +315,7 @@ class uflix():
 					YYYY = folder_name[a+1:z]
 					if len(YYYY) == 4 and YYYY.isdigit():
 						# it's probably OK
-						print("[OK] " + folder_name)
+						# print("[OK] " + folder_name)
 						continue
 
 
@@ -383,7 +382,7 @@ class uflix():
 					print('guessit_year = ' + str(guessit_year))
 
 				if new_name:
-					print(folder_name + '->' + new_name)
+					print(folder_name + ' >>>> ' + new_name)
 					# rename
 					new_full_path = os.path.join(movies_path, new_name)
 					old_full_path = os.path.join(movies_path,folder_name)
@@ -407,16 +406,21 @@ class uflix():
 if __name__ == '__main__':
 	u = uflix()
 
-	
+	verb = "info"
 		
 
 	if len(sys.argv) > 1:
 		verb = sys.argv[1]
 
+		
+
+
 	if (verb == "clean"):
 		u.clean()
 	elif (verb == "make-cli"):
 		u.make_cli()
+	elif (verb == "vcopy"):
+		u.make_virtual_copy()
 	elif (verb == "search"): 
 		name = sys.argv[2]
 		u.search(name)
@@ -425,7 +429,8 @@ if __name__ == '__main__':
 		u.add(name)
 	elif (verb == "list"):
 		u.list()
-	else:
-		print('done')
-
-
+	elif (verb == "info"):
+		# display config information 
+		print("\n uflix \n")
+		print("Movies path:  " + u.movies_path)
+		print("TV shows path: " + u.tv_shows_path)
